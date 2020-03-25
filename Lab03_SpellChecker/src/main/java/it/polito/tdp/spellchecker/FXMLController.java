@@ -2,6 +2,7 @@ package it.polito.tdp.spellchecker;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -66,6 +67,7 @@ public class FXMLController {
 		// Inibisco il pulsante Spell
 		btnSpellCheck.setDisable(true);
 		choicheBox.setDisable(true);
+		btnClearText.setDisable(false);
 
 		// Controllo che ci sia qualcosa da controllare
 		String toSpell = txtToSpell.getText();
@@ -75,8 +77,18 @@ public class FXMLController {
 		}
 
 		// Pulisco il testo e guardo la lunghezza della lista
-		toSpell = toSpell.toLowerCase().replaceAll("[.,\\/#!?$%\\^&\\*;:{}=\\-_`~()\\[\\]\"]", "");
-		List<String> LToSpell = Arrays.asList(toSpell.split(" "));
+		toSpell = toSpell.replaceAll("\n", " ");
+		toSpell = toSpell.toLowerCase().replaceAll("[.,\\/#!?$%\\^&\\*;:{}=\\-_`~()\\[\\]\"0-9]", "");
+		// List<String> LToSpell = Arrays.asList(toSpell.split(" "));
+
+		List<String> LToSpell = new LinkedList<String>();
+		String[] parts = toSpell.split(" ");
+		for (int i = 0; i < parts.length; i++) {
+			if (parts[i].matches("[a-zA-Z]+")) {
+				LToSpell.add(parts[i].trim());
+			}
+		}
+
 		if (LToSpell.size() == 0) {
 			txtSpelled.setText("Insert at least one word! Press Clear Text to restart");
 			return;
@@ -84,12 +96,11 @@ public class FXMLController {
 
 		// Carico il dizioario e abilito clear text
 		d.loadDictionary(choicheBox.getValue());
-		btnClearText.setDisable(false);
 
 		// Faccio lo spelling e misuro il tempo impiegato
 
 		double start = System.nanoTime();
-		List<RichWord> ls = d.spellCheckTest(LToSpell);
+		List<RichWord> ls = d.spellCheckTestDichotomic(LToSpell);
 		double stop = System.nanoTime();
 
 		txtSpelled.setText(d.printError(ls));
